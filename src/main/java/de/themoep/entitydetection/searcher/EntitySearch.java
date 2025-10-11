@@ -1,10 +1,13 @@
 package de.themoep.entitydetection.searcher;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.tcoded.folialib.impl.PlatformScheduler;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
 import de.themoep.entitydetection.EntityDetection;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -12,13 +15,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * Copyright 2016 Max Lee (https://github.com/Phoenix616/)
@@ -35,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * You should have received a copy of the Mozilla Public License v2.0
  * along with this program. If not, see <http://mozilla.org/MPL/2.0/>.
  */
-public class EntitySearch implements Runnable {
+public class EntitySearch implements Consumer<WrappedTask> {
     private final EntityDetection plugin;
     private final PlatformScheduler scheduler;
     private final CommandSender owner;
@@ -45,8 +48,8 @@ public class EntitySearch implements Runnable {
     private Set<Material> searchedMaterial = new HashSet<>();
     private long startTime;
     private boolean running = true;
-    private List<Entity> entities = new ArrayList<>();
-    private List<BlockState> blockStates = new ArrayList<>();
+    private Multimap<EntityType, Location> entities = MultimapBuilder.hashKeys().arrayListValues().build();
+    private Map<Material, Multimap<Class, Location>> blockStates = new HashMap<>();
 
     private boolean isWorldGuardRegion = false;
     private final AtomicInteger pending = new AtomicInteger(0);
@@ -117,6 +120,7 @@ public class EntitySearch implements Runnable {
     public void setWorldGuardRegion(boolean value) {
         this.isWorldGuardRegion = value;
     }
+
     /**
      * Get the duration since this search started
      * @return The duration in seconds
@@ -125,7 +129,7 @@ public class EntitySearch implements Runnable {
         return (System.currentTimeMillis() - getStartTime()) / 1000;
     }
 
-    public WrappedTask start() {
+    public void start() {
         int scheduled = 0;
         if (searchedEntities.size() > 0) {
             for (World world : plugin.getServer().getWorlds()) {
@@ -133,10 +137,12 @@ public class EntitySearch implements Runnable {
                 scheduled++;
                 scheduler.runAtLocation(world.getSpawnLocation(), task -> {
                     try {
-                        entities.addAll(world.getEntities());
+                        for (Entity entity : world.getEntities()) {
+                            entities.put(entity.getType(), entity.getLocation());
+                        }
                     } finally {
                         if (pending.decrementAndGet() == 0) {
-                            scheduler.runLaterAsync(this, 1L);
+                            scheduler.runAsync(this);
                         }
                     }
                 });
@@ -149,10 +155,17 @@ public class EntitySearch implements Runnable {
                     scheduled++;
                     scheduler.runAtLocation(chunk.getBlock(0, 0, 0).getLocation(), task -> {
                         try {
-                            blockStates.addAll(Arrays.asList(chunk.getTileEntities()));
+                            for (BlockState state : chunk.getTileEntities()) {
+                                Multimap<Class, Location> multiMap = blockStates.get(state.getType());
+                                if (multiMap == null) {
+                                    multiMap = MultimapBuilder.hashKeys().arrayListValues().build();
+                                    blockStates.put(state.getType(), multiMap);
+                                }
+                                multiMap.put(state.getClass(), state.getLocation());
+                            }
                         } finally {
                             if (pending.decrementAndGet() == 0) {
-                                scheduler.runLaterAsync(this, 1L);
+                                scheduler.runAsync(this);
                             }
                         }
                     });
@@ -160,9 +173,8 @@ public class EntitySearch implements Runnable {
             }
         }
         if (scheduled == 0) {
-            return scheduler.runLaterAsync(this, 1L);
+            scheduler.runAsync(this);
         }
-        return null;
     }
 
     public boolean isRunning() {
@@ -176,28 +188,28 @@ public class EntitySearch implements Runnable {
         }
     }
 
-    public void run() {
+    public void accept(WrappedTask task) {
         startTime = System.currentTimeMillis();
         SearchResult<?> result;
-        if(isWorldGuardRegion) result = new WGSearchResult(this);
+        if (isWorldGuardRegion) result = new WGSearchResult(this);
         else result = new ChunkSearchResult(this);
 
-        for(Entity e : entities) {
-            if(!running) {
-                return;
+        entities.forEach((type, location) -> {
+            if (searchedEntities.contains(type)) {
+                result.add(location, type.toString());
             }
-            if(searchedEntities.contains(e.getType())) {
-                result.addEntity(e);
-            }
-        }
+        });
 
-        for (BlockState blockState : blockStates) {
-            if (!running) {
-                return;
-            }
-            if (searchedBlockStates.contains(BlockState.class) || searchedMaterial.contains(blockState.getType()) || searchedBlockStates.contains(blockState.getClass())) {
-                result.addBlockState(blockState);
-            }
+        blockStates.forEach((type, blockLocations) -> {
+            blockLocations.forEach((clazz, location) -> {
+                if (searchedBlockStates.contains(BlockState.class) || searchedMaterial.contains(type) || searchedBlockStates.contains(clazz)) {
+                    result.add(location, type.toString());
+                }
+            });
+        });
+
+        if (!running) {
+            return;
         }
 
         result.sort();

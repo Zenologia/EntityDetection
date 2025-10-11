@@ -6,7 +6,6 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
-import com.tcoded.folialib.impl.PlatformScheduler;
 import de.themoep.entitydetection.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -20,11 +19,9 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 
 public class WGSearchResult extends SearchResult<WGSearchResult.ProtectedRegionEntry> {
-    private final PlatformScheduler scheduler;
 
     public WGSearchResult(EntitySearch search) {
         super(search);
-        this.scheduler = search.getScheduler();
     }
 
     @Override
@@ -44,7 +41,7 @@ public class WGSearchResult extends SearchResult<WGSearchResult.ProtectedRegionE
 
         applicableRegions.forEach(region -> {
             ProtectedRegionEntry protectedRegionEntry = new ProtectedRegionEntry(location.getWorld(), region);
-            if(!resultEntryMap.containsKey(protectedRegionEntry)) {
+            if (!resultEntryMap.containsKey(protectedRegionEntry)) {
                 resultEntryMap.put(protectedRegionEntry, new SearchResultEntry<>(protectedRegionEntry));
             }
             resultEntryMap.get(protectedRegionEntry).increment(type);
@@ -56,18 +53,17 @@ public class WGSearchResult extends SearchResult<WGSearchResult.ProtectedRegionE
         com.sk89q.worldedit.util.Location wgLocation = entry.getLocation().region.getFlag(Flags.TELE_LOC);
         try {
             World world = entry.getLocation().world.get();
-            if(world == null) {
+            if (world == null) {
                 sender.sendMessage(ChatColor.RED + "World " + ChatColor.WHITE + entry.getLocation().worldName + ChatColor.RED + " is not loaded anymore.");
                 return;
             }
             Location loc = wgLocation != null ? BukkitAdapter.adapt(wgLocation) : null;
-            if(loc == null) {
+            if (loc == null) {
                 loc = BukkitAdapter.adapt(world, entry.getLocation().region.getMinimumPoint().add(
                         entry.getLocation().region.getMaximumPoint().subtract(entry.getLocation().region.getMinimumPoint()).divide(2)));
             }
 
-            Location finalLoc = loc;
-            scheduler.teleportAsync(sender, finalLoc, PlayerTeleportEvent.TeleportCause.PLUGIN);
+            scheduler.teleportAsync(sender, loc, PlayerTeleportEvent.TeleportCause.PLUGIN);
 
             sender.sendMessage(
                     ChatColor.GREEN + "Teleported to entry " + ChatColor.WHITE + i + ": " +

@@ -1,6 +1,6 @@
 # <img src="assets/icon.png" height="32px" alt="Entity Detection Icon"/> EntityDetection
 
-EntityDetection is a Paper plugin with which you can quickly find chunks with a large amount of Monsters, Animals or even Tile Entities like Hoppers in it.
+EntityDetection is a Paper/Folia plugin with which you can quickly find chunks with a large amount of Monsters, Animals or even Tile Entities like Hoppers in it.
 
 Very useful if you want to find XP-Farms that accumulate a large amount of mobs or that one infinite chicken or villager breeder that brings your server to its knees!
 
@@ -17,7 +17,7 @@ Very useful if you want to find XP-Farms that accumulate a large amount of mobs 
 
 ## Dependencies
 
-This plugin does not require any other plugin to run, but it requires [Paper](https://papermc.io/) to be used as the server software and can optionally integrate with [WorldGuard](https://worldguard.enginehub.org/) for region-based entity detection.
+This plugin does not require any other plugin to run, but it requires [Paper](https://papermc.io/downloads/paper) or [Folia](https://papermc.io/downloads/folia) to be used as the server software and can optionally integrate with [WorldGuard](https://worldguard.enginehub.org/) for region-based entity detection.
 
 ## Usage
 

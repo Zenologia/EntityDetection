@@ -1,6 +1,5 @@
 package de.themoep.entitydetection.searcher;
 
-import com.tcoded.folialib.impl.PlatformScheduler;
 import de.themoep.entitydetection.ChunkLocation;
 import de.themoep.entitydetection.Utils;
 import org.bukkit.Bukkit;
@@ -14,11 +13,8 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class ChunkSearchResult extends SearchResult<ChunkLocation> {
 
-    private final PlatformScheduler scheduler;
-
     public ChunkSearchResult(EntitySearch search) {
         super(search);
-        this.scheduler = search.getScheduler();
     }
 
     @Override
@@ -35,7 +31,7 @@ public class ChunkSearchResult extends SearchResult<ChunkLocation> {
     public void add(Location location, String type) {
         ChunkLocation chunkLocation = new ChunkLocation(location);
 
-        if(!resultEntryMap.containsKey(chunkLocation)) {
+        if (!resultEntryMap.containsKey(chunkLocation)) {
             resultEntryMap.put(chunkLocation, new SearchResultEntry<>(chunkLocation));
         }
         resultEntryMap.get(chunkLocation).increment(type);
@@ -56,18 +52,18 @@ public class ChunkSearchResult extends SearchResult<ChunkLocation> {
             int anchorZ = (cz << 4) + 8;
             Location location = new Location(targetWorld, anchorX, 64, anchorZ);
 
-            targetWorld.getChunkAtAsync(cx, cz, true, chunk -> scheduler.runAtLocation(location, task -> {
+            scheduler.runAtLocation(location, task -> targetWorld.getChunkAtAsync(cx, cz, false, chunk -> {
                 Location loc = null;
 
-                for(Entity e : chunk.getEntities()) {
-                    if(e.getType().toString().equals(entry.getEntryCount().get(0).getKey())) {
+                for (Entity e : chunk.getEntities()) {
+                    if (e.getType().toString().equals(entry.getEntryCount().get(0).getKey())) {
                         loc = e.getLocation();
                         break;
                     }
                 }
 
                 for (BlockState b : chunk.getTileEntities()) {
-                    if(b.getType().toString().equals(entry.getEntryCount().get(0).getKey())) {
+                    if (b.getType().toString().equals(entry.getEntryCount().get(0).getKey())) {
                         loc = b.getLocation().add(0, 1, 0);
                         break;
                     }

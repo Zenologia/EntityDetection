@@ -34,7 +34,7 @@ public class SearchResultEntry<T> implements Comparable<SearchResultEntry<T>> {
 
     public void increment(String type) {
         size++;
-        if(!entryCount.containsKey(type)) {
+        if (!entryCount.containsKey(type)) {
             entryCount.put(type, 1);
         } else {
             entryCount.put(type, entryCount.get(type) + 1);

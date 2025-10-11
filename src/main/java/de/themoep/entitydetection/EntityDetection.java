@@ -77,7 +77,7 @@ public class EntityDetection extends JavaPlugin {
     }
 
     public boolean startSearch(EntitySearch search) {
-        if(currentSearch != null && currentSearch.isRunning()) {
+        if (currentSearch != null && currentSearch.isRunning()) {
             return false;
         }
         currentSearch = search;
@@ -86,7 +86,7 @@ public class EntityDetection extends JavaPlugin {
     }
 
     public boolean stopSearch(String stopper) {
-        if(currentSearch == null || !currentSearch.isRunning()) {
+        if (currentSearch == null || !currentSearch.isRunning()) {
             return false;
         }
         currentSearch.stop(stopper);
@@ -95,7 +95,7 @@ public class EntityDetection extends JavaPlugin {
     }
 
     public void addResult(SearchResult<?> result) {
-        if(result.getType() == SearchType.CUSTOM && result.getSearched().size() == 1) {
+        if (result.getType() == SearchType.CUSTOM && result.getSearched().size() == 1) {
             Set<String> searchedEntities = result.getSearched();
             customResults.put(searchedEntities.toArray(new String[searchedEntities.size()])[0], result);
         } else {
@@ -128,7 +128,7 @@ public class EntityDetection extends JavaPlugin {
                     .append(getMessage(sender, "result.searched-types.entry", "type", Utils.enumToHumanName(typeIter.next())));
         }
 
-        Component message = getMessage(sender, "result.head", "type", Utils.enumToHumanName(result.getType()), "timestamp", dateStr);
+        Component message = getMessage(sender, "result.head", "type", Utils.enumToHumanName(result.getType()), "timestamp", dateStr, "duration", String.valueOf(result.getDuration()));
         message = Replacer.replaceIn(message, "searchedtypes", searchedTypes);
 
         List<? extends SearchResultEntry<?>> results = result.getSortedEntries();

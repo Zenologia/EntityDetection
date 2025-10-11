@@ -12,7 +12,7 @@ help:
     none: "&red&No sub commands for command %command% found."
   usage: "Usage: &yellow&%usage%"
 result:
-  head: "[%type% search](green hover=%searchedtypes%) from %timestamp%:"
+  head: "[%type% search](green hover=%searchedtypes%) from %timestamp% (%duration%ms):"
   searched-types:
     head: "&yellow&Entity Types:"
     entry: " &dark_purple&%type%"
