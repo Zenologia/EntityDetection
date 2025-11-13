@@ -13,6 +13,11 @@ help:
   usage: "Usage: &yellow&%usage%"
 result:
   head: "[%type% search](green hover=%searchedtypes%) from %timestamp% (%duration%ms):"
+  footer:
+    pagination: " [&green&<<<](/detect list %previouspage% %resulttype% hover=&blue&Show page %previouspage%)   &yellow&Page %page%   [&green&>>>](/detect list %nextpage% %resulttype% hover=&blue&Show page %nextpage%)"
+    next-page-only: " &gray&<<<   &yellow&Page  %page%   [&green&>>>](/detect list %nextpage% %resulttype% hover=&blue&Show page %nextpage%)"
+    previous-page-only: " [&green&<<<](/detect list %previouspage% %resulttype% hover=&blue&Show page %previouspage%)   &yellow&Page %page%   &gray&>>>"
+    no-pages:  " &gray&<<<   &yellow&Page %page%   &gray&>>>"
   searched-types:
     head: "&yellow&Entity Types:"
     entry: " &dark_purple&%type%"

@@ -112,10 +112,10 @@ public class EntityDetection extends JavaPlugin {
     }
 
     public void send(CommandSender sender, SearchResult<?> result) {
-        send(sender, result, 0);
+        send(sender, result, "", 0);
     }
 
-    public void send(CommandSender sender, SearchResult<?> result, int page) {
+    public void send(CommandSender sender, SearchResult<?> result, String resultType, int page) {
         lastResultViewed.put(sender.getName(), result);
 
         String dateStr = new SimpleDateFormat(getRawMessage(sender, "result.time-format")).format(new Date(result.getEndTime()));
@@ -158,6 +158,33 @@ public class EntityDetection extends JavaPlugin {
                 resultLine = Replacer.replaceIn(resultLine, "entitycounts", entityCounts);
 
                 message = message.append(Component.newline()).append(resultLine);
+            }
+
+            if (results.size() > start + 10) {
+                if (page == 0) {
+                    message = message.append(Component.newline()).append(getMessage(sender, "result.footer.next-page-only",
+                            "page", String.valueOf(page + 1),
+                            "nextpage", String.valueOf(page + 2),
+                            "resulttype", resultType
+                    ));
+                } else {
+                    message = message.append(Component.newline()).append(getMessage(sender, "result.footer.pagination",
+                            "page", String.valueOf(page + 1),
+                            "previouspage", String.valueOf(page),
+                            "nextpage", String.valueOf(page + 2),
+                            "resulttype", resultType
+                    ));
+                }
+            } else if (page > 0) {
+                message = message.append(Component.newline()).append(getMessage(sender, "result.footer.previous-page-only",
+                        "page", String.valueOf(page + 1),
+                        "previouspage", String.valueOf(page),
+                        "resulttype", resultType
+                ));
+            } else {
+                message = message.append(Component.newline()).append(getMessage(sender, "result.footer.no-pages",
+                        "page", String.valueOf(page + 1)
+                ));
             }
         } else {
             message = message.append(Component.newline()).append(getMessage(sender, "result.no-entries"));

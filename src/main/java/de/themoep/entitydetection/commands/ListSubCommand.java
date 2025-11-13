@@ -35,6 +35,7 @@ public class ListSubCommand extends SubCommand {
         SearchResult<?> result = getPlugin().getResult(sender);
         int page = 1;
         String lastName = sender.getName();
+        String resultType = "";
         if(args.length > 0) {
             try {
                 page = Integer.parseInt(args[0]);
@@ -86,6 +87,7 @@ public class ListSubCommand extends SubCommand {
                     sender.sendMessage(ChatColor.YELLOW + arg + ChatColor.RED + " is neither a valid EntityType, Material, BlockState, SearchType or alias of a search type?");
                     return false;
                 }
+                resultType = lastName;
             }
         }
 
@@ -99,7 +101,7 @@ public class ListSubCommand extends SubCommand {
             return true;
         }
 
-        getPlugin().send(sender, result, page - 1);
+        getPlugin().send(sender, result, resultType, page - 1);
         return true;
     }
 }
